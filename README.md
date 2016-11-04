@@ -1,6 +1,6 @@
 # Unofficial OpenProvider client for Python
 
-...
+Use the Unofficial OpenProvider client to manage your domains from your application.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ To use the Unofficial OpenProvider API client, the following things are required
 
 ## Installation
 
-...
+For now you may checkout all the files, and include the Unofficial OpenProvider API client manually.
 
 ## Getting started
 
