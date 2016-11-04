@@ -5,7 +5,11 @@ class Domain(Base):
     def search(self, limit=None, offset=None, extension=None,
             domain_name_pattern=None, contact_handle=None, ns_group_pattern=None,
             status=None, with_additional_data=None):
-        """Return a list of domain object matching search criteria."""
+        """Return a list of domain object matching search criteria.
+
+        Returns:
+            list: List of Domain objects.
+        """
         request = {
             'searchDomainRequest': {
                 'limit': limit,
@@ -30,13 +34,59 @@ class Domain(Base):
 
         return domains
 
-    def retrieve(self):
-        """Retrieves information about an existing domain object."""
-        pass
+    def retrieve(self, name=None, extension=None, with_additional_data=None,
+            with_registry_details=None):
+        """Retrieves information about an existing domain object.
 
-    def check(self):
-        """Returns the availability of one or more domain names."""
-        pass
+        Returns:
+            list: List of Domain objects.
+        """
+        request = {
+            'retrieveDomainRequest': {
+                'domain': {
+                    'name': name,
+                    'extension': extension,
+                },
+                'withAdditionalData': with_additional_data,
+            }
+        }
+
+        response = self.request(request)
+        domain = DomainObject(response)
+
+        return domain
+
+    def check(self, domains=[]):
+        """Returns the availability of one or more domain names.
+
+        Args:
+            domains (list): List of tuples containing the domain name and extension.
+
+        Returns:
+            list: List of Domain objects.
+        """
+        request = {
+            'checkDomainRequest': {
+                'domains': {
+                    'array': {
+                        'item': [{
+                            'name': domain[0],
+                            'extension': domain[1],
+                        } for domain in domains]
+                    }
+                }
+            }
+        }
+
+        response = self.request(request)
+        domains = []
+
+        if isinstance(response['array']['item'], list):
+            domains = [DomainObject(domain) for domain in response['array']['item']]
+        elif isinstance(response['array']['item'], dict):
+            domains = [DomainObject(response['array']['item'])]
+
+        return domains
 
     def create(self):
         """Registers a domain name with the attributes provided."""
