@@ -22,6 +22,15 @@ openprovider.setApiUsername('username')
 openprovider.setApiHash('hashcode')
 ```
 
+Retrieving domain information.
+
+```python
+domains = openprovider.domains.search(
+    domain_name_pattern='example',
+    extension='nl'
+)
+```
+
 ## License
 
 ...

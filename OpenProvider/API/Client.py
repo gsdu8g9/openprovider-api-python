@@ -1,9 +1,9 @@
 import requests
 import xmltodict
+from collections import OrderedDict
 
-class Error(Exception):
-    def __init__(self, message=None):
-        self.message = message
+from .Error import *
+from .Module.Domain import Domain
 
 class Client(object):
     API_ENDPOINT = 'https://api.openprovider.eu'
@@ -12,6 +12,8 @@ class Client(object):
         self.api_endpoint = self.API_ENDPOINT
         self.api_username = ''
         self.api_hash = ''
+
+        setattr(self, 'domains', Domain(self))
 
     def getApiEndpoint(self):
         return self.api_endpoint
@@ -30,30 +32,19 @@ class Client(object):
     def setApiPassword(self, password):
         raise Error('You should not use a password to connect to the OpenProvider API, instead use a hash.')
 
-    def performRequest(self, dict, **kwargs):
+    def performRequest(self, command, **kwargs):
         if not self.api_username:
             raise Error('You have not set an API username. Please use setApiUsername() to set the API username.')
         if not self.api_hash:
             raise Error('You have not set an API hash. Please use setApiHash() to set the API hash.')
 
         api_dict = {
-            'openXML': {
-                'credentials': {
-                    'username': self.api_username,
-                    'hash': self.api_hash,
-                },
-                'checkDomainRequest': {
-                    'domains': {
-                        'array': {
-                            'item': {
-                                'name': 'openprovider',
-                                'extension': 'com',
-                            },
-                        },
-                    },
-                },
-            },
+            'openXML': OrderedDict({'credentials': {
+                'username': self.api_username,
+                'hash': self.api_hash,
+            }})
         }
+        api_dict['openXML'].update(command)
 
         # Convert the api_dict into XML
         data = xmltodict.unparse(api_dict)
@@ -67,8 +58,7 @@ class Client(object):
             raise Error('Unable to decode OpenProvider response: "{0}".'.format(response.text))
 
         if int(result['openXML']['reply']['code']) == 0:
-            print('SUCCESFULLL!')
-            print(response.text)
+            return result['openXML']['reply'].get('data', None)
         else:
             code = int(result['openXML']['reply']['code'])
             desc = result['openXML']['reply']['desc']
